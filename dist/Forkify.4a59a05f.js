@@ -677,7 +677,9 @@ var _searchViewJsDefault = parcelHelpers.interopDefault(_searchViewJs);
 var _resultsViewJs = require("./views/resultsView.js");
 var _resultsViewJsDefault = parcelHelpers.interopDefault(_resultsViewJs);
 var _runtime = require("regenerator-runtime/runtime");
-if (module.hot) module.hot.accept();
+// if (module.hot) {
+//   module.hot.accept();
+// }
 const controlRecipes = async function() {
     try {
         const id = window.location.hash.slice(1);
@@ -697,8 +699,8 @@ const controlSearchResults = async function() {
         const query = (0, _searchViewJsDefault.default).getQuery();
         if (!query) return;
         await _modelJs.loadSearchResults(query);
-        console.log(_modelJs.state.search.results);
-        (0, _resultsViewJsDefault.default).render(_modelJs.state.search.results);
+        // console.log(model.state.search.results);
+        (0, _resultsViewJsDefault.default).render(_modelJs.getSearchResultsPage());
     } catch (error) {
         console.log(error);
     }
@@ -2583,13 +2585,16 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "state", ()=>state);
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults);
+parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage);
 var _configJs = require("./config.js");
 var _helpersJs = require("./helpers.js");
 const state = {
     recipe: {},
     search: {
         query: '',
-        results: []
+        results: [],
+        page: 1,
+        resultsPerPage: (0, _configJs.RES_PER_PAGE)
     }
 };
 const loadRecipe = async function(id) {
@@ -2629,14 +2634,22 @@ const loadSearchResults = async function(query) {
         throw error;
     }
 };
+const getSearchResultsPage = function(page = state.search.page) {
+    state.search.page = page;
+    const start = (page - 1) * state.search.resultsPerPage;
+    const end = page * state.search.resultsPerPage;
+    return state.search.results.slice(start, end);
+};
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","./config.js":"2hPh4","./helpers.js":"7nL9P"}],"2hPh4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "API_URL", ()=>API_URL);
 parcelHelpers.export(exports, "TIMEOUT_SEC", ()=>TIMEOUT_SEC);
+parcelHelpers.export(exports, "RES_PER_PAGE", ()=>RES_PER_PAGE);
 const API_URL = 'https://forkify-api.jonas.io/api/v2/recipes/';
 const TIMEOUT_SEC = 10;
+const RES_PER_PAGE = 10;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"7nL9P":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -2968,7 +2981,6 @@ class ResultsView extends (0, _viewJsDefault.default) {
         return this._data.map(this._generateMarkupPreview).join('');
     }
     _generateMarkupPreview(result) {
-        console.log(result);
         return `
       <li class="preview">
         <a class="preview__link" href="#${result.id}">
